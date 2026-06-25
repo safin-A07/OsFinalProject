@@ -25,7 +25,10 @@ def _get_color_mapping(timeline: list[tuple]) -> dict[str, str]:
     Returns:
         dict[str, str]: Dictionary mapping PID to a hex color code.
     """
-    unique_pids = sorted(list(set(pid for pid, _, _ in timeline)), key=lambda x: (len(str(x)), str(x)))
+    unique_pids = sorted(
+        list(set(pid for pid, _, _ in timeline)),
+        key=lambda x: (len(str(x)), str(x))
+    )
     return {pid: COLOR_PALETTE[idx % len(COLOR_PALETTE)] for idx, pid in enumerate(unique_pids)}
 
 
@@ -43,7 +46,6 @@ def plot_gantt(timeline: list[tuple], title: str) -> go.Figure:
     fig = go.Figure()
 
     if not timeline:
-        # Return empty placeholder figure with dark background
         fig.update_layout(
             title=title,
             template="plotly_dark",
@@ -63,19 +65,18 @@ def plot_gantt(timeline: list[tuple], title: str) -> go.Figure:
 
     # Get consistent color mappings
     color_map = _get_color_mapping(timeline)
-    
+
     # Track which PIDs have already been added to the legend
     legend_added = set()
 
     for pid, start, end in timeline:
         duration = round(end - start, 2)
         color = color_map[pid]
-        
+
         # Show in legend only once per PID
         show_legend = pid not in legend_added
         legend_added.add(pid)
 
-        # Add single bar slice
         fig.add_trace(
             go.Bar(
                 y=[pid],
@@ -113,7 +114,21 @@ def plot_gantt(timeline: list[tuple], title: str) -> go.Figure:
         dtick = 10.0
 
     # Ensure y-axis ordering puts PID 1/A at the top of the chart
-    unique_pids = sorted(list(set(pid for pid, _, _ in timeline)), key=lambda x: (len(str(x)), str(x)), reverse=True)
+    unique_pids = sorted(
+        list(set(pid for pid, _, _ in timeline)),
+        key=lambda x: (len(str(x)), str(x)),
+        reverse=True
+    )
+
+    # Build xaxis and yaxis title dicts (compatible with Plotly 5.15+ and 6.x)
+    xaxis_title = dict(
+        text="Time Units",
+        font=dict(size=13, color="#bbbbbb", family="Inter, sans-serif")
+    )
+    yaxis_title = dict(
+        text="Process ID",
+        font=dict(size=13, color="#bbbbbb", family="Inter, sans-serif")
+    )
 
     fig.update_layout(
         title={
@@ -129,8 +144,7 @@ def plot_gantt(timeline: list[tuple], title: str) -> go.Figure:
         paper_bgcolor="#111111",
         plot_bgcolor="#111111",
         xaxis=dict(
-            title="Time Units",
-            titlefont=dict(size=13, color="#bbbbbb", family="Inter, sans-serif"),
+            title=xaxis_title,
             showgrid=True,
             gridcolor="#2c2c2c",
             dtick=dtick,
@@ -139,16 +153,15 @@ def plot_gantt(timeline: list[tuple], title: str) -> go.Figure:
             zerolinecolor="#444444"
         ),
         yaxis=dict(
-            title="Process ID",
-            titlefont=dict(size=13, color="#bbbbbb", family="Inter, sans-serif"),
+            title=yaxis_title,
             categoryorder="array",
             categoryarray=unique_pids,
             tickfont=dict(color="#bbbbbb")
         ),
-        height=320 + (30 * len(unique_pids)),  # scale height based on number of PIDs
+        height=320 + (30 * len(unique_pids)),
         margin=dict(l=60, r=30, t=70, b=50),
         legend=dict(
-            title="Processes",
+            title=dict(text="Processes"),
             orientation="h",
             yanchor="bottom",
             y=1.02,
@@ -158,8 +171,7 @@ def plot_gantt(timeline: list[tuple], title: str) -> go.Figure:
         ),
         hoverlabel=dict(
             bgcolor="#222222",
-            font_size=12,
-            font_family="Inter, sans-serif"
+            font=dict(size=12, family="Inter, sans-serif")
         )
     )
 

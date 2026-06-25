@@ -14,9 +14,9 @@ DARK_BG_COLOR = "#111111"    # Charcoal Black
 
 
 def plot_comparison_bar(
-    df_compare: pd.DataFrame, 
-    column_name: str, 
-    title: str, 
+    df_compare: pd.DataFrame,
+    column_name: str,
+    title: str,
     lower_is_better: bool = True
 ) -> go.Figure:
     """
@@ -85,8 +85,10 @@ def plot_comparison_bar(
             showgrid=False
         ),
         yaxis=dict(
-            title=column_name,
-            titlefont=dict(size=12, color="#bbbbbb", family="Inter, sans-serif"),
+            title=dict(
+                text=column_name,
+                font=dict(size=12, color="#bbbbbb", family="Inter, sans-serif")
+            ),
             tickfont=dict(color="#bbbbbb"),
             showgrid=True,
             gridcolor="#222222"
@@ -143,7 +145,6 @@ def plot_radar_comparison(df_compare: pd.DataFrame) -> go.Figure:
             }
 
     # Map each algorithm to a radar trace
-    # Soft color mapping for each algorithm
     algo_colors = {
         "FCFS": "#636EFA",
         "SJF": "#00CC96",
@@ -161,17 +162,15 @@ def plot_radar_comparison(df_compare: pd.DataFrame) -> go.Figure:
             val = float(df_compare.loc[algo, col])
             bounds = normalization_bounds[col]
             v_min, v_max = bounds["min"], bounds["max"]
-            
-            # Normalization logic
+
             if v_max == v_min:
-                # If all algorithms tie, they all get 100% score
                 score = 100.0
             else:
                 if lower_is_better:
                     score = 100.0 * (v_max - val) / (v_max - v_min)
                 else:
                     score = 100.0 * (val - v_min) / (v_max - v_min)
-            
+
             scores.append(round(score, 2))
 
         # Close the loop on radar chart
